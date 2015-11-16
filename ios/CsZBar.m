@@ -1,4 +1,5 @@
 #import "CsZBar.h"
+#import "zbar.h"
 #import "AlmaZBarReaderViewController.h"
 
 #pragma mark - State
@@ -59,6 +60,17 @@
         } else if([flash isEqualToString:@"off"]) {
             self.scanReader.cameraFlashMode = UIImagePickerControllerCameraFlashModeOff;
         }
+
+        NSArray *supportedFormats = [params objectForKey:@"formats"];
+
+        if (supportedFormats) {
+            [self.scanReader.scanner setSymbology:0 config:ZBAR_CFG_ENABLE to:0]; // disable all
+            [supportedFormats enumerateObjectsUsingBlock:^(NSString *format, NSUInteger idx, BOOL * _Nonnull stop) {
+                zbar_symbol_type_t type = [self barcodeTypeFromString:format];
+                [self.scanReader.scanner setSymbology:type config:ZBAR_CFG_ENABLE to:1];
+            }];
+        }
+
 
         // Hack to hide the bottom bar's Info button... originally based on http://stackoverflow.com/a/16353530
         UIView *infoButton = [[[[[self.scanReader.view.subviews objectAtIndex:2] subviews] objectAtIndex:0] subviews] objectAtIndex:3];
@@ -127,6 +139,28 @@
     [self sendScanResult: [CDVPluginResult
                            resultWithStatus: CDVCommandStatus_ERROR
                            messageAsString: @"Failed"]];
+}
+
+- (zbar_symbol_type_t)barcodeTypeFromString:(NSString *)string {
+    NSDictionary *map = @{
+                                 @"NONE" : @(ZBAR_NONE),
+                                 @"PARTIAL" : @(ZBAR_PARTIAL),
+                                 @"EAN8" : @(ZBAR_EAN8),
+                                 @"UPCE" : @(ZBAR_UPCE),
+                                 @"ISBN10" : @(ZBAR_ISBN10),
+                                 @"UPCA" : @(ZBAR_UPCA),
+                                 @"EAN13" : @(ZBAR_EAN13),
+                                 @"ISBN13" : @(ZBAR_ISBN13),
+                                 @"I25" : @(ZBAR_I25),
+                                 @"DATABAR" : @(ZBAR_DATABAR),
+                                 @"DATABAR_EXP" : @(ZBAR_DATABAR_EXP),
+                                 @"CODE39" : @(ZBAR_CODE39),
+                                 @"PDF417" : @(ZBAR_PDF417),
+                                 @"QRCODE" : @(ZBAR_QRCODE),
+                                 @"CODE93" : @(ZBAR_CODE93),
+                                 @"CODE128" : @(ZBAR_CODE128)
+                                 };
+    return (zbar_symbol_type_t)[map[string] integerValue];
 }
 
 
