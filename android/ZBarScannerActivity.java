@@ -2,6 +2,8 @@ package org.cloudsky.cordovaPlugins;
 
 import java.io.IOException;
 import java.lang.RuntimeException;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -93,6 +95,7 @@ implements SurfaceHolder.Callback {
         String textTitle = params.optString("text_title");
         String textInstructions = params.optString("text_instructions");
         Boolean drawSight = params.optBoolean("drawSight", true);
+        JSONArray formats = params.optJSONArray("formats");
         whichCamera = params.optString("camera");
         flashMode = params.optString("flash");
 
@@ -103,8 +106,21 @@ implements SurfaceHolder.Callback {
         scanner.setConfig(0, Config.Y_DENSITY, 3);
 
         // Set the config for barcode formats
-        for(ZBarcodeFormat format : getFormats()) {
-            scanner.setConfig(format.getId(), Config.ENABLE, 1);
+
+        if (formats != null) {
+            for (int i=0; i<formats.length(); i++){
+                try {
+                    String format = (String)formats.get(i);
+                    ZBarcodeFormat barcodeFormat = ZBarcodeFormat.getFormatByName(format);
+                    scanner.setConfig(barcodeFormat.getId(), Config.ENABLE, 1);
+                } catch (JSONException e) {
+                    Log.e(this.getClass().getSimpleName(), e.getLocalizedMessage());
+                }
+            }
+        } else {
+            for(ZBarcodeFormat format : getFormats()) {
+                scanner.setConfig(format.getId(), Config.ENABLE, 1);
+            }
         }
 
         // Set content view

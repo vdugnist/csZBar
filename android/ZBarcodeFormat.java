@@ -69,4 +69,13 @@ public class ZBarcodeFormat {
         }
         return ZBarcodeFormat.NONE;
     }
+
+    public static ZBarcodeFormat getFormatByName(String name) {
+        for(ZBarcodeFormat format : ALL_FORMATS) {
+            if(format.getName().equals(name)) {
+                return format;
+            }
+        }
+        return ZBarcodeFormat.NONE;
+    }
 }
