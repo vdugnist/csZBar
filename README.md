@@ -48,7 +48,6 @@ Possible barcodes:
 "I25"
 "DATABAR"
 "DATABAR_EXP"
-"CODABAR"
 "CODE39"
 "PDF417"
 "QRCODE"
